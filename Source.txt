@@ -20,6 +20,7 @@ function Library:CreateWindow(titleText)
     mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     mainFrame.BorderSizePixel = 0
     mainFrame.Active = true
+    mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
 
     Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
@@ -32,6 +33,7 @@ function Library:CreateWindow(titleText)
     topBar.Size = UDim2.new(1, 0, 0, 40)
     topBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     topBar.BorderSizePixel = 0
+    topBar.ZIndex = 5
     topBar.Parent = mainFrame
     Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 10)
 
@@ -40,10 +42,11 @@ function Library:CreateWindow(titleText)
     topCover.Position = UDim2.new(0, 0, 1, -10)
     topCover.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     topCover.BorderSizePixel = 0
+    topCover.ZIndex = 5
     topCover.Parent = topBar
 
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 1, 0)
+    title.Size = UDim2.new(1, -100, 1, 0)
     title.Position = UDim2.new(0, 15, 0, 0)
     title.BackgroundTransparency = 1
     title.Text = titleText
@@ -51,7 +54,37 @@ function Library:CreateWindow(titleText)
     title.TextSize = 15
     title.Font = Enum.Font.GothamBold
     title.TextXAlignment = Enum.TextXAlignment.Left
+    title.ZIndex = 6
     title.Parent = topBar
+
+    local controls = Instance.new("Frame")
+    controls.Size = UDim2.new(0, 70, 1, 0)
+    controls.Position = UDim2.new(1, -75, 0, 0)
+    controls.BackgroundTransparency = 1
+    controls.ZIndex = 6
+    controls.Parent = topBar
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 30, 0, 30)
+    closeBtn.Position = UDim2.new(1, -30, 0.5, -15)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Text = "×"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeBtn.TextSize = 24
+    closeBtn.Font = Enum.Font.GothamMedium
+    closeBtn.ZIndex = 7
+    closeBtn.Parent = controls
+
+    local minBtn = Instance.new("TextButton")
+    minBtn.Size = UDim2.new(0, 30, 0, 30)
+    minBtn.Position = UDim2.new(0, 0, 0.5, -15)
+    minBtn.BackgroundTransparency = 1
+    minBtn.Text = "−"
+    minBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    minBtn.TextSize = 24
+    minBtn.Font = Enum.Font.GothamMedium
+    minBtn.ZIndex = 7
+    minBtn.Parent = controls
 
     local dragging, dragInput, dragStart, startPos
     local function update(input)
@@ -74,20 +107,25 @@ function Library:CreateWindow(titleText)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then update(input) end
     end)
 
+    local isMinimized = false
+    minBtn.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
+        local targetSize = isMinimized and UDim2.new(0, 550, 0, 40) or UDim2.new(0, 550, 0, 360)
+        TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = targetSize}):Play()
+    end)
+
+    closeBtn.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
     local sidebarFrame = Instance.new("Frame")
     sidebarFrame.Name = "Sidebar"
     sidebarFrame.Size = UDim2.new(0, 150, 1, -40)
     sidebarFrame.Position = UDim2.new(0, 0, 0, 40)
     sidebarFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
     sidebarFrame.BorderSizePixel = 0
+    sidebarFrame.ZIndex = 2
     sidebarFrame.Parent = mainFrame
-    
-    local sideLine = Instance.new("Frame")
-    sideLine.Size = UDim2.new(0, 1, 1, 0)
-    sideLine.Position = UDim2.new(1, 0, 0, 0)
-    sideLine.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    sideLine.BorderSizePixel = 0
-    sideLine.Parent = sidebarFrame
 
     local btnList = Instance.new("ScrollingFrame")
     btnList.Size = UDim2.new(1, -10, 1, -10)
@@ -95,6 +133,7 @@ function Library:CreateWindow(titleText)
     btnList.BackgroundTransparency = 1
     btnList.BorderSizePixel = 0
     btnList.ScrollBarThickness = 0
+    btnList.ZIndex = 3
     btnList.CanvasSize = UDim2.new(0, 0, 0, 0)
     btnList.AutomaticCanvasSize = Enum.AutomaticSize.Y
     btnList.Parent = sidebarFrame
@@ -109,6 +148,7 @@ function Library:CreateWindow(titleText)
     container.Size = UDim2.new(1, -160, 1, -50)
     container.Position = UDim2.new(0, 155, 0, 45)
     container.BackgroundTransparency = 1
+    container.ZIndex = 2
     container.Parent = mainFrame
 
     local pages = {}
@@ -125,6 +165,7 @@ function Library:CreateWindow(titleText)
         page.ScrollBarImageColor3 = Color3.fromRGB(50, 50, 50)
         page.CanvasSize = UDim2.new(0, 0, 0, 0)
         page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        page.ZIndex = 3
         page.Parent = container
         
         local layout = Instance.new("UIListLayout")
@@ -140,6 +181,7 @@ function Library:CreateWindow(titleText)
         tabBtn.Font = Enum.Font.GothamSemibold
         tabBtn.TextSize = 13
         tabBtn.AutoButtonColor = false
+        tabBtn.ZIndex = 4
         tabBtn.Parent = btnList
         Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 6)
         
@@ -149,6 +191,7 @@ function Library:CreateWindow(titleText)
         activeLine.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
         activeLine.BorderSizePixel = 0
         activeLine.BackgroundTransparency = 1
+        activeLine.ZIndex = 5
         activeLine.Parent = tabBtn
 
         tabBtn.MouseEnter:Connect(function()
@@ -187,6 +230,7 @@ function Library:CreateWindow(titleText)
             local toggleFrame = Instance.new("Frame")
             toggleFrame.Size = UDim2.new(0.96, 0, 0, 40)
             toggleFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+            toggleFrame.ZIndex = 4
             toggleFrame.Parent = page
             Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", toggleFrame).Color = Color3.fromRGB(25, 25, 25)
@@ -200,6 +244,7 @@ function Library:CreateWindow(titleText)
             label.Font = Enum.Font.GothamMedium
             label.TextSize = 13
             label.TextXAlignment = Enum.TextXAlignment.Left
+            label.ZIndex = 5
             label.Parent = toggleFrame
 
             local box = Instance.new("TextButton")
@@ -207,6 +252,7 @@ function Library:CreateWindow(titleText)
             box.Position = UDim2.new(1, -44, 0.5, -9)
             box.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
             box.Text = ""
+            box.ZIndex = 5
             box.Parent = toggleFrame
             Instance.new("UICorner", box).CornerRadius = UDim.new(1, 0)
 
@@ -214,6 +260,7 @@ function Library:CreateWindow(titleText)
             inner.Size = UDim2.new(0, 14, 0, 14)
             inner.Position = UDim2.new(0, 2, 0.5, -7)
             inner.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+            inner.ZIndex = 6
             inner.Parent = box
             Instance.new("UICorner", inner).CornerRadius = UDim.new(1, 0)
 
@@ -235,6 +282,7 @@ function Library:CreateWindow(titleText)
             btn.Font = Enum.Font.GothamMedium
             btn.TextSize = 13
             btn.AutoButtonColor = false
+            btn.ZIndex = 4
             btn.Parent = page
             Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
             local s = Instance.new("UIStroke", btn)
@@ -246,19 +294,14 @@ function Library:CreateWindow(titleText)
             btn.MouseLeave:Connect(function()
                 TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 25)}):Play()
             end)
-            btn.MouseButton1Down:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(0.1), {Size = UDim2.new(0.94, 0, 0, 36)}):Play()
-            end)
-            btn.MouseButton1Up:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(0.1), {Size = UDim2.new(0.96, 0, 0, 38)}):Play()
-                callback()
-            end)
+            btn.MouseButton1Click:Connect(callback)
         end
 
         function elements:AddSlider(name, min, max, default, callback)
             local sliderFrame = Instance.new("Frame")
             sliderFrame.Size = UDim2.new(0.96, 0, 0, 55)
             sliderFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+            sliderFrame.ZIndex = 4
             sliderFrame.Parent = page
             Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", sliderFrame).Color = Color3.fromRGB(25, 25, 25)
@@ -272,6 +315,7 @@ function Library:CreateWindow(titleText)
             titleLabel.TextSize = 12
             titleLabel.Font = Enum.Font.GothamMedium
             titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            titleLabel.ZIndex = 5
             titleLabel.Parent = sliderFrame
 
             local tray = Instance.new("Frame")
@@ -279,6 +323,7 @@ function Library:CreateWindow(titleText)
             tray.Position = UDim2.new(0.04, 0, 0.75, 0)
             tray.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             tray.BorderSizePixel = 0
+            tray.ZIndex = 5
             tray.Parent = sliderFrame
             Instance.new("UICorner", tray)
 
@@ -286,6 +331,7 @@ function Library:CreateWindow(titleText)
             fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
             fill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
             fill.BorderSizePixel = 0
+            fill.ZIndex = 6
             fill.Parent = tray
             Instance.new("UICorner", fill)
 
@@ -294,6 +340,7 @@ function Library:CreateWindow(titleText)
             knob.Position = UDim2.new((default - min) / (max - min), -6, 0.5, -6)
             knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             knob.BorderSizePixel = 0
+            knob.ZIndex = 7
             knob.Parent = tray
             Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
@@ -337,6 +384,7 @@ function Library:CreateWindow(titleText)
             box.TextColor3 = Color3.fromRGB(255, 255, 255)
             box.Font = Enum.Font.Gotham
             box.TextSize = 14
+            box.ZIndex = 4
             box.Parent = page
             Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
             local s = Instance.new("UIStroke", box)
