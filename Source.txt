@@ -1,3 +1,5 @@
+-- JOLT UI LIBRARY
+
 local Library = {}
 
 function Library:CreateWindow(titleText)
@@ -85,12 +87,18 @@ function Library:CreateWindow(titleText)
     minBtn.ZIndex = 12
     minBtn.Parent = controls
 
-    local dragging, dragInput, dragStart, startPos
-    local function update(input)
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
+    local isMinimized = false
+    minBtn.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
+        local targetSize = isMinimized and UDim2.new(0, 550, 0, 40) or UDim2.new(0, 550, 0, 360)
+        TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = targetSize}):Play()
+    end)
 
+    closeBtn.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
+    local dragging, dragInput, dragStart, startPos
     topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
@@ -103,18 +111,10 @@ function Library:CreateWindow(titleText)
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then update(input) end
-    end)
-
-    local isMinimized = false
-    minBtn.MouseButton1Click:Connect(function()
-        isMinimized = not isMinimized
-        local targetSize = isMinimized and UDim2.new(0, 550, 0, 40) or UDim2.new(0, 550, 0, 360)
-        TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = targetSize}):Play()
-    end)
-
-    closeBtn.MouseButton1Click:Connect(function()
-        screenGui:Destroy()
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
     end)
 
     local sidebarFrame = Instance.new("Frame")
@@ -193,21 +193,12 @@ function Library:CreateWindow(titleText)
         activeLine.ZIndex = 4
         activeLine.Parent = tabBtn
 
-        tabBtn.MouseEnter:Connect(function()
-            TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play()
-        end)
-        tabBtn.MouseLeave:Connect(function()
-            if not page.Visible then
-                TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(13, 13, 13)}):Play()
-            end
-        end)
-
         tabBtn.MouseButton1Click:Connect(function()
             for _, p in pairs(pages) do p.Visible = false end
             for _, b in pairs(btnList:GetChildren()) do
                 if b:IsA("TextButton") then 
                     TweenService:Create(b, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundColor3 = Color3.fromRGB(13, 13, 13)}):Play()
-                    b:FindFirstChild("Frame").BackgroundTransparency = 1
+                    if b:FindFirstChild("Frame") then b.Frame.BackgroundTransparency = 1 end
                 end
             end
             page.Visible = true
@@ -232,7 +223,6 @@ function Library:CreateWindow(titleText)
             toggleFrame.ZIndex = 4
             toggleFrame.Parent = page
             Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", toggleFrame).Color = Color3.fromRGB(25, 25, 25)
 
             local label = Instance.new("TextLabel")
             label.Size = UDim2.new(1, -50, 1, 0)
@@ -272,24 +262,6 @@ function Library:CreateWindow(titleText)
             end)
         end
 
-        function elements:AddButton(name, callback)
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0.96, 0, 0, 38)
-            btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            btn.Text = name
-            btn.TextColor3 = Color3.fromRGB(230, 230, 230)
-            btn.Font = Enum.Font.GothamMedium
-            btn.TextSize = 13
-            btn.AutoButtonColor = false
-            btn.ZIndex = 4
-            btn.Parent = page
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-            local s = Instance.new("UIStroke", btn)
-            s.Color = Color3.fromRGB(40, 40, 40)
-
-            btn.MouseButton1Click:Connect(callback)
-        end
-
         function elements:AddSlider(name, min, max, default, callback)
             local sliderFrame = Instance.new("Frame")
             sliderFrame.Size = UDim2.new(0.96, 0, 0, 55)
@@ -297,7 +269,6 @@ function Library:CreateWindow(titleText)
             sliderFrame.ZIndex = 4
             sliderFrame.Parent = page
             Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", sliderFrame).Color = Color3.fromRGB(25, 25, 25)
 
             local titleLabel = Instance.new("TextLabel")
             titleLabel.Size = UDim2.new(1, -20, 0, 25)
@@ -318,21 +289,17 @@ function Library:CreateWindow(titleText)
             tray.BorderSizePixel = 0
             tray.ZIndex = 5
             tray.Parent = sliderFrame
-            Instance.new("UICorner", tray)
 
             local fill = Instance.new("Frame")
             fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
             fill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-            fill.BorderSizePixel = 0
             fill.ZIndex = 6
             fill.Parent = tray
-            Instance.new("UICorner", fill)
 
             local knob = Instance.new("Frame")
             knob.Size = UDim2.new(0, 12, 0, 12)
             knob.Position = UDim2.new((default - min) / (max - min), -6, 0.5, -6)
             knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            knob.BorderSizePixel = 0
             knob.ZIndex = 7
             knob.Parent = tray
             Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
@@ -344,7 +311,6 @@ function Library:CreateWindow(titleText)
                 local trayWidth = tray.AbsoluteSize.X
                 local percentage = math.clamp((mousePos - trayPos) / trayWidth, 0, 1)
                 local value = math.floor(min + (max - min) * percentage)
-
                 fill.Size = UDim2.new(percentage, 0, 1, 0)
                 knob.Position = UDim2.new(percentage, -6, 0.5, -6)
                 titleLabel.Text = name .. ": " .. value
@@ -352,45 +318,14 @@ function Library:CreateWindow(titleText)
             end
 
             sliderFrame.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    sliderDragging = true
-                    updateSlider()
-                end
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then sliderDragging = true updateSlider() end
             end)
-
             UserInputService.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then sliderDragging = false end
             end)
-
             UserInputService.InputChanged:Connect(function(input)
                 if sliderDragging and input.UserInputType == Enum.UserInputType.MouseMovement then updateSlider() end
             end)
-        end
-
-        function elements:AddTextBox(placeholder, callback)
-            local box = Instance.new("TextBox")
-            box.Size = UDim2.new(0.96, 0, 0, 40)
-            box.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-            box.PlaceholderText = placeholder
-            box.PlaceholderColor3 = Color3.fromRGB(80, 80, 80)
-            box.Text = ""
-            box.TextColor3 = Color3.fromRGB(255, 255, 255)
-            box.Font = Enum.Font.Gotham
-            box.TextSize = 14
-            box.ZIndex = 4
-            box.Parent = page
-            Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
-            local s = Instance.new("UIStroke", box)
-            s.Color = Color3.fromRGB(30, 30, 30)
-
-            box.Focused:Connect(function()
-                TweenService:Create(s, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 255, 0)}):Play()
-            end)
-            box.FocusLost:Connect(function(enter)
-                TweenService:Create(s, TweenInfo.new(0.2), {Color = Color3.fromRGB(30, 30, 30)}):Play()
-                callback(box.Text, enter)
-            end)
-            return box
         end
 
         function elements:AddDropdown(name, list, callback)
@@ -401,7 +336,6 @@ function Library:CreateWindow(titleText)
             dropdownFrame.ZIndex = 4
             dropdownFrame.Parent = page
             Instance.new("UICorner", dropdownFrame).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", dropdownFrame).Color = Color3.fromRGB(25, 25, 25)
 
             local dropBtn = Instance.new("TextButton")
             dropBtn.Size = UDim2.new(1, 0, 0, 40)
@@ -428,7 +362,6 @@ function Library:CreateWindow(titleText)
             arrow.BackgroundTransparency = 1
             arrow.Text = "▼"
             arrow.TextColor3 = Color3.fromRGB(150, 150, 150)
-            arrow.TextSize = 12
             arrow.ZIndex = 5
             arrow.Parent = dropdownFrame
 
@@ -444,14 +377,12 @@ function Library:CreateWindow(titleText)
             optionLayout.Parent = optionList
 
             local isOpened = false
-            local function toggleDropdown()
+            dropBtn.MouseButton1Click:Connect(function()
                 isOpened = not isOpened
                 local targetHeight = isOpened and (40 + optionLayout.AbsoluteContentSize.Y + 10) or 40
                 TweenService:Create(dropdownFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0.96, 0, 0, targetHeight)}):Play()
                 TweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
-            end
-
-            dropBtn.MouseButton1Click:Connect(toggleDropdown)
+            end)
 
             for _, option in pairs(list) do
                 local optBtn = Instance.new("TextButton")
@@ -461,7 +392,6 @@ function Library:CreateWindow(titleText)
                 optBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
                 optBtn.Font = Enum.Font.Gotham
                 optBtn.TextSize = 12
-                optBtn.AutoButtonColor = false
                 optBtn.ZIndex = 6
                 optBtn.Parent = optionList
                 Instance.new("UICorner", optBtn).CornerRadius = UDim.new(0, 4)
@@ -469,9 +399,41 @@ function Library:CreateWindow(titleText)
                 optBtn.MouseButton1Click:Connect(function()
                     label.Text = name .. ": " .. option
                     callback(option)
-                    toggleDropdown()
+                    isOpened = false
+                    TweenService:Create(dropdownFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0.96, 0, 0, 40)}):Play()
+                    TweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
                 end)
             end
+        end
+
+        function elements:AddButton(name, callback)
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(0.96, 0, 0, 38)
+            btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            btn.Text = name
+            btn.TextColor3 = Color3.fromRGB(230, 230, 230)
+            btn.Font = Enum.Font.GothamMedium
+            btn.TextSize = 13
+            btn.ZIndex = 4
+            btn.Parent = page
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+            btn.MouseButton1Click:Connect(callback)
+        end
+
+        function elements:AddTextBox(placeholder, callback)
+            local box = Instance.new("TextBox")
+            box.Size = UDim2.new(0.96, 0, 0, 40)
+            box.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            box.PlaceholderText = placeholder
+            box.Text = ""
+            box.TextColor3 = Color3.fromRGB(255, 255, 255)
+            box.Font = Enum.Font.Gotham
+            box.TextSize = 14
+            box.ZIndex = 4
+            box.Parent = page
+            Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+            box.FocusLost:Connect(function(enter) callback(box.Text, enter) end)
+            return box
         end
 
         return elements
