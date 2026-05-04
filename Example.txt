@@ -1,0 +1,74 @@
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Lantras-main/ui-lib/refs/heads/main/Source.txt"))()
+
+local Window = Lib:CreateWindow("Window Name")
+
+local Tab = Window:CreateTab("Tab")
+local Tab2 = Window:CreateTab("Tab2")
+
+Tab:AddButton("Button", function()
+	print("Button clicked")
+end)
+
+Tab:AddToggle("Toggle", function(state)
+	if state then
+		print("Toggle is on")
+	else
+		print("Toggle is off")
+	end
+end)
+
+Tab:AddSlider("Slider", 0, 1000, 0, function(value)
+	print("Slider Changed")
+end)
+
+Tab:AddTextBox("TextBox", function(text, confirmed)
+	if confirmed then
+		print(text)
+	end
+end)
+
+Tab:AddDropdown("Dropdown", {"1", "2", "3", "4"}, function(selected)
+	if selected == "1" then
+		print("1")
+	elseif selected == "2" then
+		print("2")
+	elseif selected == "3" then
+		print("3")
+	elseif selected == "4" then
+		print("4")
+	end
+end)
+
+Tab2:AddButton("Button 2", function()
+	print("Button clicked")
+end)
+
+Tab2:AddToggle("Toggle 2", function(state)
+	if state then
+		print("Toggle is on")
+	else
+		print("Toggle is off")
+	end
+end)
+
+Tab2:AddSlider("Slider 2", 0, 1000, 0, function(value)
+	print("Slider Changed")
+end)
+
+Tab2:AddTextBox("TextBox 2", function(text, confirmed)
+	if confirmed then
+		print(text)
+	end
+end)
+
+Tab2:AddDropdown("Dropdown 2", {"1", "2", "3", "4"}, function(selected)
+	if selected == "1" then
+		print("1")
+	elseif selected == "2" then
+		print("2")
+	elseif selected == "3" then
+		print("3")
+	elseif selected == "4" then
+		print("4")
+	end
+end)
